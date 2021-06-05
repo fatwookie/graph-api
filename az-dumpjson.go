@@ -9,16 +9,16 @@ package main
 		export AZURE_CLIENT_ID="xxx"
 		export AZURE_CLIENT_SECRET="xxx"
 
+	It dumps all JSON info from the API to stdout. Normally this would
+	be ingested by a log shipper.
 */
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
-	msgraph "github.com/yaegashi/msgraph.go/beta"
 	msauth "github.com/yaegashi/msgraph.go/msauth"
 	"golang.org/x/oauth2"
 )
@@ -30,15 +30,12 @@ var (
 )
 
 const (
-	usersAPI = "https://graph.microsoft.com/v1.0/users"
+	usersAPI      = "https://graph.microsoft.com/beta/users"
+	devicesAPI    = "https://graph.microsoft.com/v1.0/devices"
+	mobileAppsAPI = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps"
 )
 
 func main() {
-
-	fmt.Println(
-		"Azure PoC code for friendly intel\n",
-		"This uses the community msgraph API package\n",
-	)
 
 	var scopes = []string{msauth.DefaultMSGraphScope}
 
@@ -49,28 +46,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// this Interface client type can be used with http.Get()
 	httpClient := oauth2.NewClient(ctx, tokensource)
-
-	// range over all users in the tenant
-	// Note: this uses the deprecated Azure AD Graph API
-	fmt.Println("====== msgraph package example ==========")
-
-	graphClient := msgraph.NewClient(httpClient)
-	r := graphClient.Users().Request()
-	users, _ := r.Get(ctx)
-	for _, user := range users {
-		fmt.Printf("[*] Found user %s\n", *user.UserPrincipalName)
-	}
 
 	// This is an example making use of the raw API
 	// Really helpful is https://developer.microsoft.com/en-us/graph/graph-explorer
-	fmt.Println("====== raw API examples ==========")
 	response, err := httpClient.Get(usersAPI)
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		fmt.Println(string(data))
+		io.Copy(os.Stdout, response.Body)
 	}
+	defer response.Body.Close()
 
 }
