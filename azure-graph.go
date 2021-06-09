@@ -9,6 +9,10 @@ package main
 		export AZURE_CLIENT_ID="xxx"
 		export AZURE_CLIENT_SECRET="xxx"
 
+		Note: There is no official Azure Graph API SDK for Golang. Second
+		best is a officially supported Python SDK:
+		https://developer.microsoft.com/en-us/graph/get-started/python
+
 */
 
 import (
@@ -30,7 +34,9 @@ var (
 )
 
 const (
-	usersAPI = "https://graph.microsoft.com/v1.0/users"
+	usersAPI        = "https://graph.microsoft.com/v1.0/users"
+	groupsAPI       = "https://graph.microsoft.com/v1.0/groups"
+	groupMembersAPI = "https://graph.microsoft.com/v1.0/groups/<id>/members?$count=true"
 )
 
 func main() {
